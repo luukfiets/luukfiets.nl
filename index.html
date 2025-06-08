@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Personal Website with Sidebar</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/css/bootstrap.min.css" rel="stylesheet"
+        crossorigin="anonymous">
+    <!-- Day.js for Date Calculations -->
+    <script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.10/dayjs.min.js"></script>
+    <style>
+        /* General body and layout styles */
+        body {
+            display: flex;
+            background-color: #f8f9fa;
+            transition: all 0.5s ease;
+            font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", "Noto Sans", "Liberation Sans", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+        }
+
+        /* Sidebar styling */
+        .sidebar {
+            width: 280px;
+            min-height: 100vh;
+            padding: 1rem;
+            transition: all 0.5s ease;
+        }
+
+        .sidebar .nav-link {
+            transition: background-color 0.2s ease-in-out, transform 0.2s ease, color 0.2s ease-in-out;
+            padding: 0.75rem 1rem;
+            margin-bottom: 0.25rem;
+            border-radius: 0.375rem;
+        }
+
+        .sidebar .nav-link:not(.active):hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        /* Main content area styling */
+        .content {
+            flex-grow: 1;
+            padding: 2rem;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+        }
+
+        .content-card {
+            width: 100%;
+            max-width: 1140px;
+            /* Increased width for wider screens */
+            background-color: white;
+            padding: 2.5rem;
+            border-radius: 1rem;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.05);
+            transition: all 0.5s ease;
+        }
+
+        h1,
+        #relative-change-calculator-result,
+        #date-diff-result {
+            font-size: 1.4rem;
+        }
+
+        /* Logic to show/hide tools and content sections */
+        .tool-content {
+            display: none;
+        }
+
+        .tool-content.active {
+            display: block;
+        }
+
+        /* Deduplicator tool specific styles */
+        .dedup-textarea,
+        .merge-textarea {
+            height: 200px;
+        }
+
+        /* Ensures labels in the relative change calculator have the same width for alignment */
+        #relative-change-calculator .col-form-label {
+            width: 80px;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Sidebar Navigation -->
+    <div class="sidebar d-flex flex-column flex-shrink-0 p-3 text-white bg-dark">
+        <a href="/" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-white text-decoration-none">
+            <span class="fs-4">Luuk Fiets</span>
+        </a>
+        <hr class="text-secondary">
+        <ul class="nav nav-pills flex-column mb-auto">
+            <li class="nav-item">
+                <a href="#merge-words" class="nav-link text-white">Merge words</a>
+            </li>
+            <li class="nav-item">
+                <a href="#relative-change-calculator" class="nav-link text-white" aria-current="page">
+                    Relative change calculator
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="#approximate-keyword-deduplicator" class="nav-link text-white">Approximate keyword
+                    deduplicator</a>
+            </li>
+            <li class="nav-item">
+                <a href="#date-differences" class="nav-link text-white">Date differences</a>
+            </li>
+        </ul>
+        <hr class="text-secondary">
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="content">
+        <div class="content-card">
+
+            <!-- Tool: Merge Words -->
+            <div id="merge-words" class="tool-content">
+                <h1>Merge words</h1>
+                <p>Create combinations of word lists (in all orders)</p>
+                <hr>
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label for="list_a" class="form-label">List A</label>
+                        <textarea class="form-control merge-textarea" id="list_a" autofocus></textarea>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="list_b" class="form-label">List B</label>
+                        <textarea class="form-control merge-textarea" id="list_b"></textarea>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="list_c" class="form-label">List C</label>
+                        <textarea class="form-control merge-textarea" id="list_c"></textarea>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="" id="combine_all" checked>
+                            <label class="form-check-label" for="combine_all">Combine in all orders (ABC, ACB, BAC, BCA
+                                etc.)</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="" id="output_unique_only" checked>
+                            <label class="form-check-label" for="output_unique_only">Output unique> combinations
+                                only</label>
+                        </div>
+                        <button type="button" class="btn btn-primary my-3" id="combine-lists-button">Combine
+                            lists</button>
+                        <p><small><b>Pro tip:</b> use control + enter to combine all lists</small></p>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col">
+                        <hr class="my-2">
+                        <h2 id="number_of_combinations" class="mt-2 fs-6 fw-normal">&nbsp;</h2>
+                        <label for="output_combinations" class="form-label">All combinations</label>
+                        <textarea class="form-control merge-textarea" id="output_combinations"></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tool: Relative Change Calculator -->
+            <div id="relative-change-calculator" class="tool-content">
+                <h1>Relative change calculator</h1>
+                <p>This tool calculates the percentage change between an old and a new value.</p>
+                <hr>
+                <div class="row g-3 align-items-center">
+                    <div class="col-auto"><label for="oldValue" class="col-form-label text-end">Old Value:</label></div>
+                    <div class="col-auto"><input type="number" id="oldValue" class="form-control"></div>
+                </div>
+                <div class="row g-3 align-items-center mt-2">
+                    <div class="col-auto"><label for="newValue" class="col-form-label text-end">New Value:</label></div>
+                    <div class="col-auto"><input type="number" id="newValue" class="form-control"></div>
+                </div>
+                <div id="relative-change-calculator-result" class="mt-4"></div>
+            </div>
+
+            <!-- Tool: Approximate Keyword Deduplicator -->
+            <div id="approximate-keyword-deduplicator" class="tool-content">
+                <h1>Approximate keyword deduplicator</h1>
+                <p>Deduplicate lists of keywords with fuzzy (approximate) matching using the Sørensen–Dice coefficient.
+                </p>
+                <hr>
+                <div class="row mb-4 align-items-end gy-3">
+                    <div class="col-auto">
+                        <label for="dedup-match-threshold" class="form-label">Match threshold (&ge;)</label>
+                        <div class="input-group" style="width: 180px;">
+                            <input type="number" class="form-control" id="dedup-match-threshold" min="1" max="100"
+                                value="85">
+                            <span class="input-group-text">%</span>
+                        </div>
+                    </div>
+                    <div class="col d-flex align-items-center flex-wrap">
+                        <div class="me-3">
+                            <button type="button" class="btn btn-primary" id="dedup-button">Deduplicate</button>
+                            <button type="button" class="btn btn-outline-secondary ms-2"
+                                id="dedup-example-button">Example</button>
+                            <button type="button" class="btn btn-outline-secondary ms-2" id="how-it-works-button">How it
+                                works</button>
+                        </div>
+                        <small class="text-muted mt-2"><b>Pro tip:</b> use control + enter to start
+                            deduplicating</small>
+                    </div>
+                </div>
+
+                <div id="how-it-works" class="tool-content alert alert-secondary">
+                    <h5 class="alert-heading">How the Sørensen-Dice Coefficient Works</h5>
+                    <p>This tool measures the similarity of two strings by comparing their "bigrams" (pairs of adjacent
+                        letters).</p>
+                    <ol class="mb-0">
+                        <li>It breaks each word into overlapping pairs of letters. For "apple", the bigrams are "ap",
+                            "pp", "pl", "le".</li>
+                        <li>It counts how many bigrams the two words share.</li>
+                        <li>The similarity score is calculated as: (2 * shared bigrams) / (total bigrams in both words).
+                        </li>
+                    </ol>
+                    <p class="mt-2 mb-0">A higher score means more similarity. The "Match threshold" determines the
+                        score needed to be a duplicate.</p>
+                </div>
+
+                <div class="row gy-4">
+                    <div class="col-md-6">
+                        <label for="dedup-input-list" class="form-label" id="dedup-input-list-title"><strong>Input
+                                list</strong></label>
+                        <textarea class="form-control dedup-textarea" id="dedup-input-list" autofocus></textarea>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="dedup-keep-list" class="form-label" id="dedup-keep-title"><strong>Words to
+                                keep</strong></label>
+                        <textarea class="form-control dedup-textarea" id="dedup-keep-list" readonly></textarea>
+                    </div>
+                    <div class="col-md-12">
+                        <label class="form-label" id="dedup-delete-title"><strong>Words to delete</strong></label>
+                        <div class="table-responsive">
+                            <table class="table table-striped table-sm">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">Original keyword</th>
+                                        <th scope="col">Best match from "keep" list</th>
+                                        <th scope="col">Match rate</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="dedup-delete-table-body">
+                                    <tr>
+                                        <td colspan="3">Enter words in the input list and then hit the deduplicate
+                                            button.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tool: Date differences -->
+            <div id="date-differences" class="tool-content">
+                <h1>Calculate date differences</h1>
+                <p>Choose two dates to calculate the difference in days.</p>
+                <hr>
+                <div class="row">
+                    <div class="col-md-4">
+                        <label for="startDate" class="form-label">Start date</label>
+                        <input type="date" class="form-control" id="startDate" autofocus>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="endDate" class="form-label">End date</label>
+                        <input type="date" class="form-control" id="endDate">
+                    </div>
+                </div>
+                <div class="row mt-4">
+                    <div class="col-md-8">
+                        <label class="mb-2">Counting Method:</label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="countType" id="countType1" checked>
+                            <label class="form-check-label" for="countType1">From start to end (exclude end
+                                date)</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="countType" id="countType2">
+                            <label class="form-check-label" for="countType2">From start to end (include end
+                                date)</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="countType" id="countType3">
+                            <label class="form-check-label" for="countType3">Full days in between (exclude start and end
+                                dates)</label>
+                        </div>
+                    </div>
+                </div>
+                <hr class="my-4">
+                <h2 id="date-diff-result">Please select two dates to begin</h2>
+            </div>
+
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js"
+        crossorigin="anonymous"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // --- Routing Logic ---
+            function showToolFromHash() {
+                const hash = window.location.hash || '#merge-words'; // Default to merge-words
+                const sidebarLinks = document.querySelectorAll('.sidebar .nav-link');
+                document.querySelectorAll('.tool-content:not(#how-it-works)').forEach(content => content.classList.remove('active'));
+
+                sidebarLinks.forEach(link => {
+                    link.classList.remove('active');
+                    link.removeAttribute('aria-current');
+                });
+
+                const activeLink = document.querySelector(`.sidebar a[href="${hash}"]`);
+                const activeContent = document.querySelector(hash);
+
+                if (activeLink) {
+                    activeLink.classList.add('active');
+                    activeLink.setAttribute('aria-current', 'page');
+                }
+                if (activeContent) {
+                    activeContent.classList.add('active');
+                    const firstInput = activeContent.querySelector('input, textarea');
+                    if (firstInput) firstInput.focus();
+                }
+            }
+            window.addEventListener('hashchange', showToolFromHash);
+            showToolFromHash();
+
+            // --- Helper functions for cookies ---
+            function setCookie(name, value, days) {
+                let expires = "";
+                if (days) {
+                    const date = new Date();
+                    date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+                    expires = "; expires=" + date.toUTCString();
+                }
+                document.cookie = name + "=" + (value || "") + expires + "; path=/";
+            }
+
+            function getCookie(name) {
+                const nameEQ = name + "=";
+                const cookieArray = document.cookie.split(';');
+                for (let i = 0; i < cookieArray.length; i++) {
+                    let c = cookieArray[i];
+                    while (c.charAt(0) == ' ') c = c.substring(1, c.length);
+                    if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length, c.length);
+                }
+                return null;
+            }
+
+            // --- Merge words logic ---
+            const combineBtn = document.getElementById('combine-lists-button');
+            if (combineBtn) {
+                const listA_el = document.getElementById("list_a");
+                const listB_el = document.getElementById("list_b");
+                const listC_el = document.getElementById("list_c");
+                const combineAll_el = document.getElementById("combine_all");
+                const outputUniqueOnly_el = document.getElementById("output_unique_only");
+                const outputCombinations_el = document.getElementById("output_combinations");
+                const numberOfCombinations_el = document.getElementById("number_of_combinations");
+
+                // Load settings from cookies on startup
+                if (getCookie("mw_combine_all") !== "false") combineAll_el.checked = true;
+                if (getCookie("mw_output_unique_only") !== "false") outputUniqueOnly_el.checked = true;
+
+                function combineLists() {
+                    const listA = listA_el.value.split("\n");
+                    const listB = listB_el.value.split("\n");
+                    const listC = listC_el.value.split("\n");
+                    let outputList = [];
+                    const startTime = performance.now();
+
+                    listA.forEach(wordA => {
+                        listB.forEach(wordB => {
+                            listC.forEach(wordC => {
+                                const base = [wordA, wordB, wordC].filter(Boolean);
+                                if (base.length > 0) outputList.push(base.join(" "));
+
+                                if (combineAll_el.checked) {
+                                    const permutations = [
+                                        [wordA, wordC, wordB],
+                                        [wordB, wordA, wordC],
+                                        [wordB, wordC, wordA],
+                                        [wordC, wordA, wordB],
+                                        [wordC, wordB, wordA]
+                                    ];
+                                    permutations.forEach(p => {
+                                        const filteredP = p.filter(Boolean);
+                                        if (filteredP.length > 0) outputList.push(filteredP.join(" "));
+                                    });
+                                }
+                            });
+                        });
+                    });
+
+                    if (outputUniqueOnly_el.checked) {
+                        outputList = [...new Set(outputList)];
+                    }
+
+                    const diffInMs = Math.round(performance.now() - startTime);
+                    numberOfCombinations_el.innerText = `${outputList.length} combinations in ${diffInMs} ms`;
+                    outputCombinations_el.value = outputList.join("\n");
+                    outputCombinations_el.select();
+                }
+
+                function handleSettingChange(event) {
+                    const { id, checked } = event.target;
+                    if (id === "combine_all") setCookie("mw_combine_all", String(checked), 7);
+                    if (id === "output_unique_only") setCookie("mw_output_unique_only", String(checked), 7);
+                }
+
+                combineBtn.addEventListener('click', combineLists);
+                [listA_el, listB_el, listC_el].forEach(el => {
+                    el.addEventListener("keydown", e => { if (e.ctrlKey && e.key === "Enter") combineLists(); });
+                });
+                [combineAll_el, outputUniqueOnly_el].forEach(el => {
+                    el.addEventListener('change', handleSettingChange);
+                });
+            }
+        });
+
+        // --- Relative change calculator Logic ---
+        const oldValueInput = document.getElementById('oldValue');
+        const newValueInput = document.getElementById('newValue');
+        const resultDiv = document.getElementById('relative-change-calculator-result');
+        function calculateChange() {
+            const oldVal = parseFloat(oldValueInput.value);
+            const newVal = parseFloat(newValueInput.value);
+            if (!isNaN(oldVal) && !isNaN(newVal) && oldValueInput.value !== '' && newValueInput.value !== '') {
+                if (oldVal === 0) {
+                    resultDiv.innerHTML = '<span class="text-danger">Error: Old value cannot be zero.</span>'; return;
+                }
+                const relativeChange = ((newVal - oldVal) / oldVal) * 100;
+                const roundedChange = relativeChange.toFixed(1);
+                let changeText = `Relative Change: <span class="fw-bold">${roundedChange}%</span>`;
+                if (relativeChange > 0) { changeText += ' <span class="text-success">(Increase)</span>'; }
+                else if (relativeChange < 0) { changeText += ' <span class="text-danger">(Decrease)</span>'; }
+                resultDiv.innerHTML = changeText;
+            } else { resultDiv.innerHTML = ''; }
+        }
+        if (oldValueInput && newValueInput) {
+            oldValueInput.addEventListener('input', calculateChange);
+            newValueInput.addEventListener('input', calculateChange);
+        }
+
+        // --- Keyword deduplicator logic ---
+        const dedupButton = document.getElementById('dedup-button');
+        if (dedupButton) {
+            const dedupExampleButton = document.getElementById('dedup-example-button');
+            const dedupInputList = document.getElementById('dedup-input-list');
+            const howItWorksButton = document.getElementById('how-it-works-button');
+            const howItWorksContent = document.getElementById('how-it-works');
+
+            function dedupExample() {
+                dedupInputList.value = "apple\napples\napple\nbanana\nbanan\nbanana pancake\npineapple\napplepine\nhello world\nworld hello";
+                deduplicateKeywords();
+            }
+
+            function deduplicateKeywords() {
+                const matchThreshold = document.getElementById("dedup-match-threshold").value / 100;
+                if (matchThreshold < 0.01 || matchThreshold > 1) {
+                    console.error("Invalid match threshold. Must be between 1 and 100."); return;
+                }
+                const wordsToKeepEl = document.getElementById("dedup-keep-list");
+                const deleteTableBody = document.getElementById("dedup-delete-table-body");
+                const inputWords = dedupInputList.value.toLowerCase().split("\n").filter(Boolean);
+
+                if (inputWords.length === 0) {
+                    wordsToKeepEl.value = "";
+                    deleteTableBody.innerHTML = '<tr><td colspan="3">Enter words in the input list...</td></tr>';
+                    document.getElementById("dedup-input-list-title").innerHTML = `<strong>Input list (0)</strong>`;
+                    document.getElementById("dedup-keep-title").innerHTML = `<strong>Words to keep (0)</strong>`;
+                    document.getElementById("dedup-delete-title").innerHTML = `<strong>Words to delete (0)</strong>`;
+                    return;
+                }
+
+                const wordsToKeep = [];
+                const wordsToDelete = [];
+                document.getElementById("dedup-input-list-title").innerHTML = `<strong>Input list (${inputWords.length})</strong>`;
+
+                if (inputWords.length > 0) wordsToKeep.push(inputWords[0]);
+
+                for (let i = 1; i < inputWords.length; i++) {
+                    const comparisonResults = findBestSorensenDiceMatch(inputWords[i], wordsToKeep);
+                    if (comparisonResults.bestMatch.rating < matchThreshold) {
+                        wordsToKeep.push(inputWords[i]);
+                    } else {
+                        wordsToDelete.push({
+                            keyword: inputWords[i],
+                            bestMatchWord: comparisonResults.bestMatch.target,
+                            bestMatchRate: Math.round(comparisonResults.bestMatch.rating * 100),
+                        });
+                    }
+                }
+
+                wordsToKeepEl.value = wordsToKeep.join("\n");
+                wordsToDelete.sort((a, b) => b.bestMatchRate - a.bestMatchRate);
+
+                const tableRowsHtml = wordsToDelete.map(item => `<tr><td>${item.keyword}</td><td>${item.bestMatchWord}</td><td>${item.bestMatchRate}%</td></tr>`).join('');
+                deleteTableBody.innerHTML = tableRowsHtml || `<tr><td colspan="3">No duplicates found.</td></tr>`;
+
+                document.getElementById("dedup-keep-title").innerHTML = `<strong>Words to keep (${wordsToKeep.length})</strong>`;
+                document.getElementById("dedup-delete-title").innerHTML = `<strong>Words to delete (${wordsToDelete.length})</strong>`;
+            }
+
+            function compareTwoStringsSorensenDice(first, second) {
+                first = first.replace(/\s+/g, '');
+                second = second.replace(/\s+/g, '');
+                if (first.length < 2 || second.length < 2) return 0;
+                let firstBigrams = new Map();
+                for (let i = 0; i < first.length - 1; i++) {
+                    const bigram = first.substring(i, i + 2);
+                    const count = firstBigrams.has(bigram) ? firstBigrams.get(bigram) + 1 : 1;
+                    firstBigrams.set(bigram, count);
+                }
+                let intersectionSize = 0;
+                for (let i = 0; i < second.length - 1; i++) {
+                    const bigram = second.substring(i, i + 2);
+                    const count = firstBigrams.has(bigram) ? firstBigrams.get(bigram) : 0;
+                    if (count > 0) {
+                        firstBigrams.set(bigram, count - 1);
+                        intersectionSize++;
+                    }
+                }
+                return (2.0 * intersectionSize) / (first.length + second.length - 2);
+            }
+
+            function findBestSorensenDiceMatch(mainString, targetStrings) {
+                if (!targetStrings.length) return { ratings: [], bestMatch: { target: '', rating: 0 }, bestMatchIndex: -1 };
+                const ratings = targetStrings.map(target => ({ target, rating: compareTwoStringsSorensenDice(mainString, target) }));
+                const bestMatch = ratings.reduce((best, current) => current.rating > best.rating ? current : best, { rating: -1 });
+                return { ratings, bestMatch, bestMatchIndex: ratings.indexOf(bestMatch) };
+            }
+
+            dedupButton.addEventListener('click', deduplicateKeywords);
+            dedupExampleButton.addEventListener('click', dedupExample);
+            howItWorksButton.addEventListener('click', () => howItWorksContent.classList.toggle('active'));
+            dedupInputList.addEventListener("keydown", e => { if (e.ctrlKey && e.key === "Enter") deduplicateKeywords(); });
+        }
+
+        // --- Date Differences Logic ---
+        const startDateInput = document.getElementById('startDate');
+        if (startDateInput) {
+            const endDateInput = document.getElementById('endDate');
+            const resultEl = document.getElementById('date-diff-result');
+            const countTypeRadios = document.querySelectorAll('input[name="countType"]');
+            function calculateDateDifference() {
+                const startDate = startDateInput.value ? dayjs(startDateInput.value) : null;
+                const endDate = endDateInput.value ? dayjs(endDateInput.value) : null;
+                if (!startDate || !endDate || !startDate.isValid() || !endDate.isValid()) {
+                    resultEl.textContent = 'Please select two dates to begin';
+                    return;
+                }
+                if (endDate.isBefore(startDate)) {
+                    resultEl.textContent = 'End date cannot be before the start date.';
+                    return;
+                }
+                let difference = endDate.diff(startDate, 'day');
+                const selectedCountType = document.querySelector('input[name="countType"]:checked').id;
+                if (selectedCountType === 'countType2') { // include end date
+                    difference++;
+                } else if (selectedCountType === 'countType3' && difference > 0) { // exclude start and end
+                    difference--;
+                }
+                const message = difference === 1 ? ' day' : ' days';
+                resultEl.textContent = difference + message;
+            }
+            startDateInput.addEventListener('change', calculateDateDifference);
+            endDateInput.addEventListener('change', calculateDateDifference);
+            countTypeRadios.forEach(radio => radio.addEventListener('change', calculateDateDifference));
+        }
+
+    </script>
+</body>
+
+</html>
